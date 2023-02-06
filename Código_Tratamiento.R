@@ -1,5 +1,9 @@
 #Tratamiento de datos 
 
+#Visión de base de datos
+
+glimpse(bbdd)
+
 # Se hace el cambio de CHR a Factor por medio del siguiente codigo
 bbdd$CH04 <- as.factor(bbdd$CH04)
 
@@ -38,3 +42,5 @@ plot_bar(bbdd$AGLOMERADO)
 
 #Para establecer las variables. 
 bbdd %>% plot_bar()
+
+glimpse(bbdd)

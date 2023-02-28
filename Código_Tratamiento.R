@@ -44,3 +44,11 @@ plot_bar(bbdd$AGLOMERADO)
 bbdd %>% plot_bar()
 
 glimpse(bbdd)
+
+
+#Construcción de modelos de regresión lineal múltiple 
+
+
+modelo <- lm(P21 ~ CH06 , data = bbdd)
+
+summary(modelo)

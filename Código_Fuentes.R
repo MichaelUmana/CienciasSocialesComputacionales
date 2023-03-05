@@ -13,10 +13,10 @@ library(DataExplorer)
 
 #Se cargan los datos
 
-bbdd <- read.csv("./Data/M34_202103_eph.csv")
-head(bbdd)
-unique(bbdd)
+M34_202103_eph <- read.csv("./Data/M34_202103_eph.csv")
+head(M34_202103_eph)
+unique(M34_202103_eph)
 
 #Visión de base de datos
 
-glimpse(bbdd)
+glimpse(M34_202103_eph)

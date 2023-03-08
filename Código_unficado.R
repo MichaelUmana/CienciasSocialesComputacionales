@@ -1,3 +1,10 @@
+#Se instalan los paquetes 
+
+install.packages("officer")
+install.packages("treemap")
+install.packages("forcats")
+
+
 
 #Se cargan los paquetes
 
@@ -7,6 +14,11 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(DataExplorer)
+library(officer)
+library(treemap)
+library(forcats)
+
+#Se carga la base de datos
 
 M34_202103_eph <- read_csv("Documents/Diplomatura IDAES/TPs/TP Final/M34_202103_eph.csv", col_names = TRUE)
 View(M34_202103_eph)
@@ -31,6 +43,7 @@ Base_exploracion <- M34_202103_eph %>%
                                 CH06 >= 75 ~ "Mayor a 75"))
 
 
+#Luego de los filtros la base de datos quedo con 17492 observaciones, lo que nos permite tener una base de datos mas pequeña.
 
 #Vamos a explorar la relación entre los rangos de edad, ingreso y el género por
 # considerarlas variables base a entender. Al igual que vincularemos los rangos de
@@ -229,3 +242,135 @@ Categoria_ocupacion_ingreso <- Base_exploracion %>%
 
 ggplot(Categoria_ocupacion_ingreso, aes(x = CAT_OCUP, y = ingreso_prom)) +
   geom_col()
+
+
+#Se hace el exploratorio con ocupación
+
+#Se la clase de la variablae CAT_OCUP para hacer los cambios pertinentes. 
+
+class(Base_exploracion$CAT_OCUP)
+
+#Se pasa la variable de character a factor para posteriormente hacer el analisis exploratorio
+
+Base_exploracion$CAT_OCUP <- as.factor(Base_exploracion$CAT_OCUP)
+
+#Se construye el primer gráfico que muestra la división del tipo de categoria de
+
+ggplot(Base_exploracion, aes(x = CAT_OCUP, fill = CH04)) +
+  geom_bar() +  
+  coord_flip()+
+  labs (title = "Categoria de ocupación por género", 
+        x = "Tipo de ocupación",
+        y = "Cantidad",
+        fill = "Género")
+
+
+#La base de datos nos muestra que nayoritariamente la ocupación se concentra en el tipo de empleo de Obrero/empleado. 
+#Se observa mayoritariamente la presencia de Hombres en dicho sector, sin embargo, la presencia de mujeres no presenta 
+#una gran diferencia respecto a su contra parte. 
+
+#En segunda lugar, se puede apreciar que la opción "Cuenta propia" presenta un porcentaje menor de respuesta. Sin embargo
+#Sigue la tendencia que hay una presencia mayoritaria del genero masculino que del fenemino. 
+
+# Crear la tabla cruzada con xtabs()
+tabla_xtabs <- xtabs(~ CH04 + CAT_OCUP, data = Base_exploracion)
+
+# Mostrar la tabla
+tabla_xtabs
+
+#Se extraen los datos por medio de un arrchivo word
+
+doc_resultados <- read_docx()
+
+body_add_table(doc_resultados,value=as.data.frame(tabla_xtabs))
+
+print(doc_resultados, target = "tabla_cruzada.docx")
+
+
+#Se hace una gráfica para saber el género de los encuestados, se busca complementar la información anterior.
+
+ggplot(Base_exploracion, aes(x = CH04, fill = CH04)) +
+  geom_bar() +  
+  labs (title = "Género de los encuestados", 
+        x = "Cantidad",
+        y = "Género",
+        fill = "Género")+
+        theme_minimal()
+
+#Se hace un summary para conocer los números enteros del género de los encuestados. 
+
+tabla_genero <- table(Base_exploracion$CH04)
+
+doc_genero <- read_docx()
+
+body_add_table(doc_resultados,value=as.data.frame(tabla_genero))
+
+print(doc_genero, target = "tabla_genero.docx")
+
+
+#Se hace un histograma con las edades de las edades de los encuestados. Sumado que se hace un 
+
+ggplot(Base_exploracion, aes(CH06))+
+  geom_histogram(fill= "blue" , color = "black")+
+  labs(title = "Histograma de edades encuestados", x = "Valores", y = "Frecuencia") +
+  theme_minimal()
+
+summary(Base_exploracion$CH06)
+
+
+#Se hace el tema con categoria 
+
+class(Base_exploracion$CATEGORIA)
+
+#Se hace un unique para poder 
+unique(Base_exploracion$CATEGORIA)
+
+#Al igual que las otras variables, la variable categoria tiene caracteristicas de Character y hay que pasarla a factor.
+
+Base_exploracion$CATEGORIA <- as.factor(Base_exploracion$CATEGORIA)
+
+
+#Se hace una nueva base de datos con el count de categorias que cuentes lo casos de la variable Categoria
+
+N_categorias<- Base_exploracion %>% 
+   count(CATEGORIA)
+
+#Se hace una tabla con los números de las categorias
+
+tabla_categorias <- xtabs(~ CATEGORIA + n, data = N_categorias)
+
+tabla_categorias
+
+#Se hace un documento aparte con los números de las categorias 
+
+doc_categorias <- read_docx()
+
+body_add_table(doc_categorias,value=as.data.frame(tabla_categorias))
+
+print(doc_categorias, target = "tabla_categorias.docx")
+
+#Se hace una nueva base de datos ocupando la base de datos N_categorias aplicando un filtro de 70 Casos hacía arriba. 
+#Ya que hay sectores los cuales presenta números marginales y 
+
+N_categorias2 <- N_categorias %>% 
+                  filter(n > 800)
+
+N_categorias <- N_categorias %>% 
+  mutate(CATEGORIA = fct_lump(CATEGORIA, n = 10, other_level = "Otros"))
+
+#Luego del cambio hacer se hace un gráfico con la categoria de sectores. 
+
+treemap(N_categorias, index = "CATEGORIA" , vSize = "n" , type = "index", 
+        palette = terrain.colors(10), title = "Categorias", fontsize.labels = 8 ,algorithm = "squarified")
+
+
+
+treemap(N_categorias, index = "CATEGORIA", vSize = "n", type = "index", 
+        palette = terrain.colors(10), title = "Categorias", 
+        fontsize.labels = 8, algorithm = "squarified" ,layout.algorithm = "squarified")
+
+
+treemap(N_categorias, index = "CATEGORIA", vSize = "n", type = as.character("index"), 
+        palette = terrain.colors(10), title = "Categorias", 
+        fontsize.labels = 8)
+

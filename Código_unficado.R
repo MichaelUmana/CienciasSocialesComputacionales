@@ -477,8 +477,14 @@ Matriz <-  cor(Base_exploracion$sexo_factor , Base_exploracion$P21_dummy)
 
 Base_exploracion$P21_dummy <- ifelse(Base_exploracion$P21>= 69500, 0, 1)
 
+#Se analiza la distribución de las variables seleccionadas para la regresión logistica Sexo, CH06 (Años Cumplidos), PP04A (Sector de establecimiento donde trabaja) , INTENSIDAD, CATEGORIA OCUPACIOAL)
 
-#Establecer el 
+table(Base_exploracion$CAT_OCUP)
+table(Base_exploracion$PP04A)
+table(Base_exploracion$INTENSI)
+table(Base_exploracion$CH04)
+table(Base_exploracion$PP04A_factor)
+
 
 # Hacer las variables Sexo, CH06 (Años Cumplidos), PP04A (Sector de establecimiento donde trabaja) , INTENSIDAD, CATEGORIA OCUPACIOAL)
 
@@ -487,6 +493,16 @@ Base_exploracion <- Base_exploracion %>%
   mutate(PP04A_factor = factor(PP04A)) %>% 
   mutate(INTENSI_factor = factor(INTENSI)) %>%
   mutate(CAT_OCUP_factor = factor(CAT_OCUP))
+
+
+#Se toman las siguientes categorias para poder establecer el relevel 
+
+Base_exploracion$CAT_OCUP <- relevel(factor(Base_exploracion$CAT_OCUP_factor), ref = "Obrero o empleado")
+Base_exploracion$CAT_OCUP <- relevel(factor(Base_exploracion$PP04A_factor), ref = "...privada")
+Base_exploracion$CAT_OCUP <- relevel(factor(Base_exploracion$INTENSI_factor), ref = "Sobreocupado")
+Base_exploracion$CAT_OCUP <- relevel(factor(Base_exploracion$CH04), ref = "Mujer")
+
+#Se quiere ver a una mujer sobre ocupada, que trabaja en el sector privado como obrera. 
 
 
 #Se hace el modelo de regresion logistica 

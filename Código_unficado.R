@@ -16,7 +16,11 @@ library(ggplot2)
 library(DataExplorer)
 library(officer)
 library(treemap)
-library(forcats)
+library(forcats)}
+
+#Se pone el código para la notación cientifica
+
+options(scipen = 999)
 
 #Se carga la base de datos
 
@@ -53,19 +57,19 @@ Base_exploracion <- M34_202103_eph %>%
 
 options(scipen = 999)
 
-ggplot(Base_exploracion, aes(x = edad_rango, y = P21, fill = CH04)) +
-  geom_col() +  
-  labs (title = "Ingresos acumulados por rango de edad y género", 
-        x = "Rango de edad",
-        y = "Ingreso en pesos Ar",
-        fill = "Género")
-
-ggplot(Base_exploracion, aes(x = edad_rango, y = PP3E_TOT, fill = CH04)) +
-  geom_col() +  
-  labs (title = "Horas trabajadas acumuladas por rango de edad y género", 
-        x = "Rango de edad",
-        y = "Horas trabajadas",
-        fill = "Género")
+  ggplot(Base_exploracion, aes(x = edad_rango, y = P21, fill = CH04)) +
+    geom_col() +  
+    labs (title = "Ingresos acumulados por rango de edad y género", 
+          x = "Rango de edad",
+          y = "Ingreso en pesos Ar",
+          fill = "Género")
+  
+  ggplot(Base_exploracion, aes(x = edad_rango, y = PP3E_TOT, fill = CH04)) +
+    geom_col() +  
+    labs (title = "Horas trabajadas acumuladas por rango de edad y género", 
+          x = "Rango de edad",
+          y = "Horas trabajadas",
+          fill = "Género")
 
 
 
@@ -254,7 +258,7 @@ class(Base_exploracion$CAT_OCUP)
 
 Base_exploracion$CAT_OCUP <- as.factor(Base_exploracion$CAT_OCUP)
 
-#Se construye el primer gráfico que muestra la división del tipo de categoria de
+#Se construye el primer gráfico que muestra la división del tipo de categoria de ocupación por género
 
 ggplot(Base_exploracion, aes(x = CAT_OCUP, fill = CH04)) +
   geom_bar() +  
@@ -363,7 +367,8 @@ N_categorias <- N_categorias %>%
 treemap(N_categorias, index = "CATEGORIA" , vSize = "n" , type = "index", 
         palette = terrain.colors(10), title = "Categorias", fontsize.labels = 8 ,algorithm = "squarified")
 
-
+treemap(N_categorias, index = "CATEGORIA" , vSize = "n" , type = "index", 
+        palette = terrain.colors(10), title = "Categorias", fontsize.labels = 8)
 
 treemap(N_categorias, index = "CATEGORIA", vSize = "n", type = "index", 
         palette = terrain.colors(10), title = "Categorias", 
@@ -373,4 +378,128 @@ treemap(N_categorias, index = "CATEGORIA", vSize = "n", type = "index",
 treemap(N_categorias, index = "CATEGORIA", vSize = "n", type = as.character("index"), 
         palette = terrain.colors(10), title = "Categorias", 
         fontsize.labels = 8)
+
+ggplot(N_categorias, aes(n, fill = CATEGORIA))+
+  geom_bar(fill= "blue" , color = "black")+
+  labs(title = "Histograma de edades encuestados", x = "Valores", y = "Frecuencia") +
+  theme_minimal()
+
+
+#Regresión Lineal Múltiple o logistica 
+
+
+class(Base_exploracion$P21)
+
+Base_exploracion$CH04_rec <- as.factor(Base_exploracion$CH04_rec)
+
+
+Base_exploracion <- Base_exploracion %>% 
+                    mutate(CH04_rec = case_when(as.logical(CH04 == "Varon") ~ "1",
+                                                as.logical(CH04 == "Mujer") ~ "0"))
+
+Base_exploracion$CH04_rec <- as.factor(Base_exploracion$CH04_rec)
+
+modelo <- glm(P21 ~ CH040 + CH041 , family=binomial, data = Base_exploracion)
+
+
+#Transformar a dummy genero 
+
+Base_exploracion <-  Base_exploracion %>%
+                     mutate(sexo_dummy = if_else(CH04 == "Varon", 1, 0))
+
+#se hace una recodificación de la variable estado civil 
+
+                
+Base_exploracion <- Base_exploracion %>% 
+  mutate(CH07_rec = case_when(CH07 == "unido?" ~ 1, 
+                              CH07 == "soltero/a?" ~ 2,
+                              CH07 == "separado/a o divorsiado/a?" ~ 3, 
+                              CH07 == "casado?" ~ 4, 
+                              CH07 == "viudo/a?" ~ 5 ))
+
+Base_exploracion <- Base_exploracion %>% 
+                    mutate(CAT_OCUP_rec = case_when(CAT_OCUP == "Obrero o empleado" ~ 1, 
+                                                CAT_OCUP ==  "Cuenta propia"  ~ 2,
+                                                CAT_OCUP ==  "Patron"  ~ 3, 
+                                                CAT_OCUP == "Trabajador familiar sin remuneracion" ~ 4))
+
+
+unique(Base_exploracion$CAT_OCUP)
+
+
+
+#Comoprobación de tipos de variables 
+
+class(Base_exploracion$CH07_rec)
+class(Base_exploracion$sexo_dummy)
+class(Base_exploracion$CAT_OCUP_rec)
+
+
+# Preparar las variables predictoras
+
+data$sexo <- as.factor(data$sexo)
+data$categoria_ocupacion <- as.factor(data$categoria_ocupacion)
+data$estado_civil <- as.factor(data$estado_civil)
+
+  unique(Base_exploracion$CH07)
+
+modelo <- glm(P21 ~ CH04 + CH06 + CH07, data = Base_exploracion, family = binomial)
+
+class(Base_exploracion$CH06)
+
+
+class(Base_exploracion$CH04)
+
+class(Base_exploracion$CH04_rec)
+
+
+Base_exploracion <- model.matrix(~CH04 - 1, Base_exploracion)
+
+unique(Base_exploracion$CH04_rec)
+
+
+#Regresión logistica 
+
+
+#filtrar el salario minimo en Argentina 69.500 para establecer cuantas personas ganan sobre el sueldo minimo. 
+
+bbdd_filtrada <- Base_exploracion %>% 
+                  filter(P21 >= 69500)
+
+
+#Matriz de correlaciones 
+
+
+Matriz <-  cor(Base_exploracion$sexo_factor , Base_exploracion$P21_dummy)
+
+
+#Se hace una variable dummy con los que están sobre el sueldo minimo. 
+
+Base_exploracion$P21_dummy <- ifelse(Base_exploracion$P21>= 69500, 0, 1)
+
+
+#Establecer el 
+
+# Hacer las variables Sexo, CH06 (Años Cumplidos), PP04A (Sector de establecimiento donde trabaja) , INTENSIDAD, CATEGORIA OCUPACIOAL)
+
+Base_exploracion <- Base_exploracion %>%
+  mutate(sexo_factor = factor(CH04)) %>% 
+  mutate(PP04A_factor = factor(PP04A)) %>% 
+  mutate(INTENSI_factor = factor(INTENSI)) %>%
+  mutate(CAT_OCUP_factor = factor(CAT_OCUP))
+
+
+#Se hace el modelo de regresion logistica 
+
+modelo <- glm(P21_dummy ~ sexo_factor + PP04A_factor + INTENSI_factor + CAT_OCUP_factor , data = Base_exploracion, family = binomial(link = "logit"))
+
+#Se hace un summary al modelo
+
+summary(modelo)
+  
+ 
+
+
+
+
 

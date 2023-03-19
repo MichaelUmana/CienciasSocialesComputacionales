@@ -495,7 +495,7 @@ Base_exploracion <- Base_exploracion %>%
   mutate(CAT_OCUP_factor = factor(CAT_OCUP))
 
 
-#Se toman las siguientes categorias para poder establecer el relevel 
+#Se toman las siguientes categorias para poder establecer el relevel. Se eligen las variables bases para poder construir el modelo. 
 
 Base_exploracion$CAT_OCUP <- relevel(factor(Base_exploracion$CAT_OCUP_factor), ref = "Obrero o empleado")
 Base_exploracion$CAT_OCUP <- relevel(factor(Base_exploracion$PP04A_factor), ref = "...privada")
